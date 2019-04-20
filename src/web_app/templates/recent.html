@@ -1,19 +1,59 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Flasky{% endblock %}
+<!-- {% block title %}Flasky{% endblock %} -->
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
+    <h1>Find movie events {% if month %} in {{ month|capitalize }}{% else %}Upcoming{% endif %}!</h1>
 </div>
-{{ wtf.quick_form(form) }}
-<ul>
-    {% if hits %}
-        {% for hit in hits %}
-            <li>{{ hit['_source']['FlightNum'] }}</li>
+<div class="btn-group" role="group" aria-label="Basic example">
+    <!-- {% if months %}
+        {% for month in months %}
+        <button type="button" class="btn btn-secondary">{{ month }}</button>
         {% endfor %}
-    {% endif %}
-</ul>
+    {% endif %} -->
+    <a href="/recent" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Upcoming</a>
+    <a href="/recent/april" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">April</a>
+    <a href="/recent/may" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">May</a>
+    <a href="/recent/june" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">June</a>
+</div>
+
+
+<!-- {{ wtf.quick_form(form) }} -->
+
+<div class="view view-events">
+    <h2>Results</h2>
+    <div class="view-content">
+        <div class="table-responsive tableAll">
+            <table class="table views-table table-hover" cols-5>
+                <thead class="thead-dark">
+                    <tr>
+                        <th class="views-field views-field-field-image-optional" scope="col">EventName</th>
+                        <th class="views-field views-field-field-moviename" scope="col">MovieName</th>
+                        <th class="views-field views-field-field-eventdate" scope="col">Date</th>
+                        <th class="views-field views-field-field-location" scope="col">Location</th>
+                        <th class="views-field views-field-field-link" scope="col">EventLink</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if hits %}
+                    {% for hit in hits %}
+                        <tr>
+                            <td>{{ hit['_source']['Event name'] }}</td>
+                            <td>{{ hit['_source']['Movie name'] }}</td>
+                            <td>{{ hit['_source']['Date'] }}</td>
+                            <td>{{ hit['_source']['Location'] }}</td>
+                            <td><a href = {{ hit['_source']['Link'] }} target="_blank">Event Link</a></td>
+                        </tr>
+                    {% endfor %}
+                    {% endif %}                
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 

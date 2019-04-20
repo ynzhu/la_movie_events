@@ -67,14 +67,18 @@ def post_to_es():
     es = Elasticsearch()
     with open('./data/merge_event.csv','r') as merged:
         merged = list(merged)
-        headers = merged[0].split(",")
+        # print(merged)
+        headers = merged[0].replace("\n", "").strip().split(",")
+        print(headers)
         for line in range(len(merged[1:])):
-            py_dict = {}
-            columns = merged[1:][line].split(",")
-            for i in range(len(headers)):
-                py_dict[headers[0]] = columns[0]
-            res = es.index(index="events_test", doc_type="events", id=line, body=py_dict)
-            print(res)
+            if merged[1:][line].strip():
+                py_dict = {}
+                columns = merged[1:][line].replace("\n", "").strip().split(",")
+                for i in range(len(headers)):
+                    py_dict[headers[i].strip()] = columns[i].strip()
+                # print(py_dict)
+                res = es.index(index="events_test", doc_type="events", id=line, body=py_dict)
+                print(res)
 
 if __name__ == "__main__":
     post_to_es()
