@@ -17,7 +17,9 @@ This project builds a knowledge graph of movies that are going to be shown in US
 ## Data Processing Program
 
 ## Web Application Program
-
+The following frameworks are used
+- Flask
+- Bootstrap
 
 ## Team members
 Yuning Zhu, zhuyunin@gmail.com  
