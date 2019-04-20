@@ -6,6 +6,9 @@ class QuotesSpider(scrapy.Spider):
     name = "quotes"
 
     def start_requests(self):
+        with open('./data/usc_events.csv','w') as f:
+            pass
+
         urls = [
             'https://cinema.usc.edu/events/index.cfm'
         ]
@@ -23,17 +26,13 @@ class QuotesSpider(scrapy.Spider):
         movie = response.css('h2 em strong').extract()
         movie2 = response.css('h2 strong em').extract()
         link = response.url
-        print title 
-        print time 
-        print location
+       
         if movie:
             pass 
         elif movie2:
             movie = movie2
         else:
             movie = ""
-
-        print "\n"
 
 
         if title and time and location:
@@ -43,32 +42,13 @@ class QuotesSpider(scrapy.Spider):
             if movie:
                 mov = movie[0].split("<")[1].split(">")[1].replace(',',' ')
             else:
-                mov = "none"
+                mov = ""
 
-            print tit
-            print tim 
-            print loc
-            print mov
-            print link
-            print "\n"
+           
 
             with open('./data/usc_events.csv','a') as f:
                 f.write(tit + "," + mov + ","+ tim + "," + loc + "," + link + "\n")
 
-
-        # if not os.path.exists('./source'):
-        #     os.mkdir('source')
-
-
-        # if element:
-        #     simpleHtml = element[0].split("<")[1].split(">")[1] +".html"
-        #     with open('./source/'+simpleHtml, 'w') as f:
-        #         f.write(response.body)
-
-
-
-        
-    
 
         next_page = response.css('div.col-lg-12 h5 a::attr("href")').extract()
         if next_page is not None:
