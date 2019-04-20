@@ -3,10 +3,9 @@ import json
 import os
 import sys
 import csv
+from elasticsearch import Elasticsearch
 
 def events_data_clean():
-
-
 	with open('./data/merge_event.csv','w') as f:
 		f.write("Event name , Movie name , Date , Time , Location , Link ")
 		f.write("\n")
@@ -43,23 +42,8 @@ def events_data_clean():
 					time = time + "am"
 			else:
 				time = ""
-
-			print(time)
-
-
 			with open('./data/merge_event.csv','a') as f:
 				f.write(ls[0] + "," + ls[1] + "," + date + "," + time + "," + ls[3] + "," + ls[4] + "\n")
-
-
-
-
-
-
-
-
-
-
-
 		
 		#print(list(csvfile))
 		#print("\n")
@@ -70,31 +54,27 @@ def events_data_clean():
 			date_process = schedule.split("-")[0].split(" ")
 			date = date_process[0] + "-" + date_process[1] + "-" + date_process[3]
 			time = schedule.split("-")[1]
-
-
-
 			with open('./data/merge_event.csv','a') as f:
 				f.write(ls[0] + "," + ls[1] + "," + date + "," + time + "," + ls[3] + "," + ls[4] + "\n")
 
-
-
-
-
-			#print(line[0])
-		#print(csvfile)
-
-
-
-
-
-
-
-
 def events_merge():
-  pass
+  	pass
 
 def data_match():
-  pass
+  	pass
+
+def post_to_es():
+    es = Elasticsearch()
+    with open('./data/merge_event.csv','r') as merged:
+        merged = list(merged)
+        headers = merged[0].split(",")
+        for line in range(len(merged[1:])):
+            py_dict = {}
+            columns = merged[1:][line].split(",")
+            for i in range(len(headers)):
+                py_dict[headers[0]] = columns[0]
+            res = es.index(index="events_test", doc_type="events", id=line, body=py_dict)
+            print(res)
 
 if __name__ == "__main__":
-    events_data_clean()
+    post_to_es()

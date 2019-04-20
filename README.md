@@ -2,10 +2,9 @@
 This project builds a knowledge graph of movies that are going to be shown in USC events
 
 ## Data Sources
-1. USC Cinematic 
-2. IMDB
-3. Rotten tomato
-4. UCLA movie & events (maybe)
+1. USC Cinematic Events
+2. UCLA Film Events
+3. IMDB
 
 ## Components
 1. Extraction Program
@@ -22,6 +21,7 @@ This project builds a knowledge graph of movies that are going to be shown in US
 2. Merge events data from USC and UCLA
 3. Match Data of events data and movie data
 4. Convert data into json-ld format
+5. Post data into ElasticSearch
 
 ## Web Application Program
 The following frameworks are used

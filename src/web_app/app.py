@@ -16,8 +16,11 @@ es = Elasticsearch()
 
 class NameForm(FlaskForm):
     name = StringField('Choose a range of the flight?', validators=[DataRequired()])
+    time = StringField('Choose a time for event?',  validators=[DataRequired()])
     submit = SubmitField('Submit')
-
+class NameForm2(FlaskForm):
+    name = StringField('Recent Evernt?', validators=[DataRequired()])
+    submit = SubmitField('Submit')
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -37,7 +40,7 @@ def index():
     if form.validate_on_submit():
         name = form.name.data
         body = {
-          "query":{
+          "query": {
             "bool": {
               "filter": {
                 "range": {
@@ -49,6 +52,26 @@ def index():
             }
           }
         }
+
+        # time_query = {
+        #     "query":{
+        #         "match_all": {}
+        #     },
+        #     "sort":[
+        #         {
+        #             "event_time": "asc" 
+        #         }
+        #     ],
+        # }
+
+        # name_query = {
+        #     "query":{
+        #         "match":{
+        #             "movie_name":name
+        #         }
+        #     }
+        # }
+
         result = es.get(index="kibana_sample_data_flights", doc_type="_doc", id="p3bBkmgBOPMEk8-zj4lv")
         res = es.search(index="kibana_sample_data_flights", body=body)
 
@@ -56,3 +79,8 @@ def index():
         
         form.name.data = ''
     return render_template('index.html', form=form, name=name, hits=hits)
+
+@app.route('/recent', methods=['GET', 'POST'])
+def recent_events():
+    form = NameForm2()
+    return render_template('recent.html', form=form)
