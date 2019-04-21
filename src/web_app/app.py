@@ -19,7 +19,7 @@ class NameForm(FlaskForm):
     time = StringField('Choose a time for event?',  validators=[DataRequired()])
     submit = SubmitField('Submit')
 class NameForm2(FlaskForm):
-    name = StringField('Recent Evernt?', validators=[DataRequired()])
+    month = StringField('Which month?', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 @app.errorhandler(404)
@@ -82,5 +82,34 @@ def index():
 
 @app.route('/recent', methods=['GET', 'POST'])
 def recent_events():
+    month = None
+    query_body ={}
+    res = es.search(index="events_test", body=query_body, size=100)['hits']['hits']
+    res.sort(key=lambda x:x['_source']['Date'])
     form = NameForm2()
-    return render_template('recent.html', form=form)
+    if form.validate_on_submit():
+        month = form.month.data
+        query_body = {
+            "query": {
+                "match": {
+                    "Date": month
+                }
+            },
+        }
+        res = es.search(index="events_test", body=query_body, size=50)['hits']['hits']
+        res.sort(key=lambda x:x['_source']['Date'])
+    return render_template('recent.html', form=form, hits = res)
+
+@app.route('/recent/<month>', methods=['GET', 'POST'])
+def recent_month_events(month):
+    form = NameForm2()
+    query_body = {
+        "query": {
+            "match": {
+                "Date": month
+            }
+        },
+    }
+    res = es.search(index="events_test", body=query_body, size=50)['hits']['hits']
+    res.sort(key=lambda x:x['_source']['Date'])
+    return render_template('recent.html', form=form, hits = res, month=month)
