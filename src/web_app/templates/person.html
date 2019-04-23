@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}CityOfMovie{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>{% if person_info %}{{ person_info[0]['_source']['primaryName'] }}{% else %}Stranger{% endif %}'s Main Page</h1>
+</div>
+{% if person_info %}
+<h2>Year: {{ person_info[0]['_source']['birthYear'] }} - {{ person_info[0]['_source']['deathYear'] }}</h2>
+<div>
+  <h2>Professions: {{ person_info[0]['_source']['primaryProfession'] }} </h2>
+
+</div>
+<div>
+  <h2>Famous Movies: </h2>
+</div>
+<ul>
+    {% if movie_list %}
+        {% for movie in movie_list %}
+            <!-- Button trigger modal -->
+            <div>
+            <button type="button" class="btn btn-primary btn-md" data-toggle="modal" data-target=#{{ movie['_source']['primaryTitle'] }}>
+                    {{ movie['_source']['primaryTitle'] }}
+            </button>
+            </div>   
+            <!-- Modal -->
+            <div class="modal fade" id={{ movie['_source']['primaryTitle'] }} tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">{{ movie['_source']['primaryTitle'] }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container">
+                                <p><b>Year</b>: {% if movie['_source']['startYear'] %}{{ movie['_source']['startYear'] }}{% else %}N/A{% endif %}</p>
+                                <p><b>Director</b>: {% if movie['_source']['directorsName'] %}
+                                    {% for name in movie['_source']['directorsName'] %}
+                                    <a href={{ person_id[name] }}>{{ name }}</a>
+                                    {% endfor %}
+                                    {% else %}N/A{% endif %}</p>
+                                <p><b>Star</b>: {% if movie['_source']['actorsName'] %}
+                                    {% for name in movie['_source']['actorsName'] %}
+                                    <a href={{ person_id[name] }}>{{ name }}</a>
+                                    {% endfor %}
+                                    {% else %}N/A{% endif %}</p>
+                                <p><b>Writer</b>: {% if movie['_source']['writersName'] %}
+                                    {% for name in movie['_source']['writersName'] %}
+                                    <a href={{ person_id[name] }}>{{ name }}</a>
+                                    {% endfor %}                                       
+                                    {% else %}N/A{% endif %}</p>
+                                <p><b>Genre</b>: {% if movie['_source']['genres'] %}
+                                    {{ movie['_source']['genres'].replace('"', '') }}
+                                    {% else %}N/A{% endif %}</p>
+                                <p><b>Rating</b>: {% if movie['_source']['rating'] %}
+                                    {{ movie['_source']['rating'] }}
+                                    {% else %}N/A{% endif %}</p>
+                            </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</ul>
+{% endif %}
+{% endblock %}

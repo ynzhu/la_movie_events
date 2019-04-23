@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-<!-- {% block title %}Flasky{% endblock %} -->
-
 {% block page_content %}
 <div class="page-header">
     <h1>Find movie events {% if month %} in {{ month|capitalize }}{% else %}Upcoming{% endif %}!</h1>
@@ -41,7 +39,59 @@
                     {% for hit in hits %}
                         <tr>
                             <td>{{ hit['_source']['Event name'] }}</td>
-                            <td>{{ hit['_source']['Movie name'] }}</td>
+                            <td>
+                                {% if hit['_source']['Movie name'] %}
+                                <!-- Button trigger modal -->
+                                <button type="button" class="btn btn-primary btn-md" data-toggle="modal" data-target=#{{hit['_source']['Movie name']}}>
+                                        {{ hit['_source']['Movie name'] }}
+                                </button>
+                                    
+                                <!-- Modal -->
+                                <div class="modal fade" id={{hit['_source']['Movie name']}} tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                                    <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <h4 class="modal-title" id="myModalLabel">{{ hit['_source']['Movie name'] }}</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                        {% if movie_info[hit['_source']['Movie name']] %}
+                                        {% for mm in movie_info[hit['_source']['Movie name']] %}
+                                        <div class="container">
+                                            <p><b>Year</b>: {% if mm['_source']['startYear'] %}{{ mm['_source']['startYear'] }}{% else %}N/A{% endif %}</p>
+                                            <p><b>Director</b>: {% if mm['_source']['directorsName'] %}
+                                                {% for name in  mm['_source']['directorsName'] %}
+                                                <a href=/person/{{ person_id[name] }} >{{ name }}</a>
+                                                {% endfor %}
+                                                {% else %}N/A{% endif %}</p>
+                                            <p><b>Star</b>: {% if mm['_source']['actorsName'] %}
+                                                {% for name in  mm['_source']['actorsName'] %}
+                                                <a href=/person/{{ person_id[name] }} >{{ name }}</a>
+                                                {% endfor %}
+                                                {% else %}N/A{% endif %}</p>
+                                            <p><b>Writer</b>: {% if mm['_source']['writersName'] %}
+                                                {% for name in mm['_source']['writersName'] %}
+                                                <a href=/person/{{ person_id[name] }} >{{ name }}</a>
+                                                {% endfor %}                                       
+                                                {% else %}N/A{% endif %}</p>
+                                            <p><b>Genre</b>: {% if mm['_source']['genres'] %}
+                                                {{ mm['_source']['genres'].replace('"', '') }}
+                                                {% else %}N/A{% endif %}</p>
+                                            <p><b>Rating</b>: {% if mm['_source']['rating'] %}
+                                                {{ mm['_source']['rating'] }}
+                                                {% else %}N/A{% endif %}</p>
+                                        </div>
+                                        {% endfor%}
+                                        {% endif %}
+                                        </div>
+                                        <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </td>
                             <td>{{ hit['_source']['Date'] }}</td>
                             <td>{{ hit['_source']['Location'] }}</td>
                             <td><a href = {{ hit['_source']['Link'] }} target="_blank">Event Link</a></td>

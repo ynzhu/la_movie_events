@@ -79,6 +79,51 @@ def post_to_es():
                 # print(py_dict)
                 res = es.index(index="events_test", doc_type="events", id=line, body=py_dict)
                 print(res)
+def post_to_es_person():
+    es = Elasticsearch()
+    with open('/Users/WEI/Downloads/name.basics.tsv','r') as names:
+        names = list(names)
+        headers = names[0].replace("\n", "").split("\t")
+        names = names[1:]
+        for i in range(len(names)):
+            py_dict = {}
+            columns = names[i].replace("\n", "").split("\t")
+            for j in range(len(headers)):
+                py_dict[headers[j].strip()] = columns[j].strip()
+            res = es.index(index="persons", doc_type="person", id=i, body=py_dict)
+            print(res)
 
+def post_to_es_imdb():
+    es = Elasticsearch()
+    with open('/Users/WEI/Downloads/final_outputs.tsv','r') as names:
+        names = list(names)
+        headers = ["primaryTitle", "startYear",  "genres", "directorsName", "writersName",
+        "actorsName", "tconst", "directorsNconst", "writersNconst", "actorsNconst", "rating"]
+        for i in range(len(names)):
+            py_dict = {}
+            columns = names[i].replace("\n", "").split("\t")
+            for j in range(len(headers)):
+                py_dict[headers[j].strip()] = columns[j].strip()
+            res = es.index(index="imdb", doc_type="imdb_complete", id=i, body=py_dict)
+            print(res)
+
+def post_to_es_matched():
+    es = Elasticsearch()
+    with open('/Users/WEI/Downloads/usc_ucla_imdb_tyk.tsv','r') as names:
+        names = list(names)
+        headers = ["primaryTitle", "startYear",  "genres", "directorsName", "writersName",
+        "actorsName", "tconst", "directorsNconst", "writersNconst", "actorsNconst", "rating"]
+        for i in range(len(names)):
+            # print(names[i].replace("\n", "").split("\t"))
+            # print(len(names[i].replace("\n", "").split("\t")))
+            py_dict = {}
+            columns = names[i].replace("\n", "").split("\t")
+            # print(columns)
+            for j in range(len(headers)):
+                py_dict[headers[j].strip()] = columns[j].strip()
+            res = es.index(index="matched_imdb", doc_type="imdb", id=i, body=py_dict)
+            print(res)
 if __name__ == "__main__":
-    post_to_es()
+    # post_to_es()
+    # post_to_es_imdb()
+    post_to_es_matched()

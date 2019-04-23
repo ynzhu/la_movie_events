@@ -15,8 +15,7 @@ es = Elasticsearch()
 
 
 class NameForm(FlaskForm):
-    name = StringField('Choose a range of the flight?', validators=[DataRequired()])
-    time = StringField('Choose a time for event?',  validators=[DataRequired()])
+    location = StringField('Choose a location for events?', validators=[DataRequired()])
     submit = SubmitField('Submit')
 class NameForm2(FlaskForm):
     month = StringField('Which month?', validators=[DataRequired()])
@@ -53,25 +52,6 @@ def index():
           }
         }
 
-        # time_query = {
-        #     "query":{
-        #         "match_all": {}
-        #     },
-        #     "sort":[
-        #         {
-        #             "event_time": "asc" 
-        #         }
-        #     ],
-        # }
-
-        # name_query = {
-        #     "query":{
-        #         "match":{
-        #             "movie_name":name
-        #         }
-        #     }
-        # }
-
         result = es.get(index="kibana_sample_data_flights", doc_type="_doc", id="p3bBkmgBOPMEk8-zj4lv")
         res = es.search(index="kibana_sample_data_flights", body=body)
 
@@ -97,8 +77,36 @@ def recent_events():
             },
         }
         res = es.search(index="events_test", body=query_body, size=50)['hits']['hits']
-        res.sort(key=lambda x:x['_source']['Date'])
-    return render_template('recent.html', form=form, hits = res)
+    res.sort(key=lambda x:x['_source']['Date']) 
+    movie_info = {}
+    person_id = {}
+
+    for hit in res:
+        movie_name = hit['_source']['Movie name']
+        query_body_movie = {
+            "query":{
+                "match": {
+                    "primaryTitle": movie_name
+                }
+            }
+        }
+        res_movie = es.search(index="matched_imdb", body=query_body_movie, size=1)['hits']['hits']
+        movie_info[movie_name] = res_movie
+    for key in movie_info:
+        for ll in range(len(movie_info[key])):
+            movie_info[key][ll]['_source']['directorsName'] = movie_info[key][ll]['_source']['directorsName'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['directorsNconst'] = movie_info[key][ll]['_source']['directorsNconst'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['actorsName'] = movie_info[key][ll]['_source']['actorsName'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['actorsNconst'] = movie_info[key][ll]['_source']['actorsNconst'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['writersName'] = movie_info[key][ll]['_source']['writersName'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['writersNconst'] = movie_info[key][ll]['_source']['writersNconst'].replace('"', '').split(",")
+            for i in range(len(movie_info[key][ll]['_source']['directorsNconst'])):
+                person_id[movie_info[key][ll]['_source']['directorsName'][i]] = movie_info[key][ll]['_source']['directorsNconst'][i]
+            for i in range(len(movie_info[key][ll]['_source']['actorsNconst'])):
+                person_id[movie_info[key][ll]['_source']['actorsName'][i]] = movie_info[key][ll]['_source']['actorsNconst'][i]
+            for i in range(len(movie_info[key][ll]['_source']['writersNconst'])):
+                person_id[movie_info[key][ll]['_source']['writersName'][i]] = movie_info[key][ll]['_source']['writersNconst'][i]
+    return render_template('recent.html', form=form, hits = res, movie_info = movie_info, person_id=person_id)
 
 @app.route('/recent/<month>', methods=['GET', 'POST'])
 def recent_month_events(month):
@@ -110,6 +118,135 @@ def recent_month_events(month):
             }
         },
     }
+    query_body2 = {
+        "query": {
+            "match": {
+                "Date": month
+            }
+        },
+    }
+
     res = es.search(index="events_test", body=query_body, size=50)['hits']['hits']
     res.sort(key=lambda x:x['_source']['Date'])
-    return render_template('recent.html', form=form, hits = res, month=month)
+    # res = es.search(index="imdb", body=query_body2, size = 100)
+    movie_info = {}
+    person_id = {}
+    for hit in res:
+        movie_name = hit['_source']['Movie name']
+        query_body_movie = {
+            "query":{
+                "match": {
+                    "primaryTitle": movie_name
+                }
+            }
+        }
+        res_movie = es.search(index="matched_imdb", body=query_body_movie, size=1)['hits']['hits']
+        movie_info[movie_name] = res_movie
+    for key in movie_info:
+        for ll in range(len(movie_info[key])):
+            movie_info[key][ll]['_source']['directorsName'] = movie_info[key][ll]['_source']['directorsName'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['directorsNconst'] = movie_info[key][ll]['_source']['directorsNconst'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['actorsName'] = movie_info[key][ll]['_source']['actorsName'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['actorsNconst'] = movie_info[key][ll]['_source']['actorsNconst'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['writersName'] = movie_info[key][ll]['_source']['writersName'].replace('"', '').split(",")
+            movie_info[key][ll]['_source']['writersNconst'] = movie_info[key][ll]['_source']['writersNconst'].replace('"', '').split(",")
+            for i in range(len(movie_info[key][ll]['_source']['directorsNconst'])):
+                person_id[movie_info[key][ll]['_source']['directorsName'][i]] = movie_info[key][ll]['_source']['directorsNconst'][i]
+            for i in range(len(movie_info[key][ll]['_source']['actorsNconst'])):
+                person_id[movie_info[key][ll]['_source']['actorsName'][i]] = movie_info[key][ll]['_source']['actorsNconst'][i]
+            for i in range(len(movie_info[key][ll]['_source']['writersNconst'])):
+                person_id[movie_info[key][ll]['_source']['writersName'][i]] = movie_info[key][ll]['_source']['writersNconst'][i]
+    return render_template('recent.html', form=form, hits = res, month=month, movie_info=movie_info, person_id=person_id)
+
+@app.route('/person/<nconst>', methods=['GET', 'POST'])
+def person_page(nconst):
+    res = None
+    movie_result_list = []
+    tconst_movie = {}
+    person_id = {}
+
+    query_body = {
+        "query": {
+            "match": {
+                "nconst": nconst
+            }
+        }
+    }
+
+
+    res = es.search(index="persons",body=query_body,size=1)['hits']['hits']
+    tconst_list = res[0]['_source']['knownForTitles'].split(",")
+    for tconst in tconst_list:
+        query_body_movie = {
+            "query": {
+                "match": {
+                    "tconst": tconst
+                }
+            }
+        }
+        res_movie = es.search(index="imdb",body=query_body_movie,size=1)['hits']['hits']
+        for ll in range(len(res_movie)):
+            res_movie[ll]['_source']['directorsName'] = res_movie[ll]['_source']['directorsName'].replace('"', '').split(",")
+            res_movie[ll]['_source']['actorsName'] = res_movie[ll]['_source']['actorsName'].replace('"', '').split(",")
+            res_movie[ll]['_source']['writersName'] = res_movie[ll]['_source']['writersName'].replace('"', '').split(",")
+            res_movie[ll]['_source']['actorsNconst'] = res_movie[ll]['_source']['actorsNconst'].replace('"', '').split(",")
+            res_movie[ll]['_source']['directorsNconst'] = res_movie[ll]['_source']['directorsNconst'].replace('"', '').split(",")
+            res_movie[ll]['_source']['writersNconst'] = res_movie[ll]['_source']['writersNconst'].replace('"', '').split(",")
+            for i in range(len(res_movie[ll]['_source']['directorsNconst'])):
+                person_id[res_movie[ll]['_source']['directorsName'][i]] = res_movie[ll]['_source']['directorsNconst'][i]
+            for i in range(len(res_movie[ll]['_source']['actorsNconst'])):
+                person_id[res_movie[ll]['_source']['actorsName'][i]] = res_movie[ll]['_source']['actorsNconst'][i]
+            for i in range(len(res_movie[ll]['_source']['writersNconst'])):
+                person_id[res_movie[ll]['_source']['writersName'][i]] = res_movie[ll]['_source']['writersNconst'][i]
+            movie_result_list.append(res_movie[ll])
+            tconst_movie[tconst] = res_movie[ll]
+    return render_template('person.html', person_info=res, movie_list = movie_result_list, tconst_movie = tconst_movie, person_id = person_id)
+
+@app.route('/location', methods=["GET", "POST"])
+def find_location():
+    location = None
+    hits = None
+    movie_info = {}
+    person_id ={}
+    form = NameForm()
+    if form.validate_on_submit():
+        location = form.location.data
+        body = {
+          "query": {
+              "match": {
+                  "Location": location
+              }
+          }
+        }
+
+        hits = es.search(index="events_test", body=body, size=50)['hits']['hits']
+        movie_info = {}
+        person_id = {}
+
+        for hit in hits:
+            movie_name = hit['_source']['Movie name']
+            query_body_movie = {
+                "query":{
+                    "match": {
+                        "primaryTitle": movie_name
+                    }
+                }
+            }
+            res_movie = es.search(index="matched_imdb", body=query_body_movie, size=1)['hits']['hits']
+            movie_info[movie_name] = res_movie
+        for key in movie_info:
+            for ll in range(len(movie_info[key])):
+                movie_info[key][ll]['_source']['directorsName'] = movie_info[key][ll]['_source']['directorsName'].replace('"', '').split(",")
+                movie_info[key][ll]['_source']['directorsNconst'] = movie_info[key][ll]['_source']['directorsNconst'].replace('"', '').split(",")
+                movie_info[key][ll]['_source']['actorsName'] = movie_info[key][ll]['_source']['actorsName'].replace('"', '').split(",")
+                movie_info[key][ll]['_source']['actorsNconst'] = movie_info[key][ll]['_source']['actorsNconst'].replace('"', '').split(",")
+                movie_info[key][ll]['_source']['writersName'] = movie_info[key][ll]['_source']['writersName'].replace('"', '').split(",")
+                movie_info[key][ll]['_source']['writersNconst'] = movie_info[key][ll]['_source']['writersNconst'].replace('"', '').split(",")
+                for i in range(len(movie_info[key][ll]['_source']['directorsNconst'])):
+                    person_id[movie_info[key][ll]['_source']['directorsName'][i]] = movie_info[key][ll]['_source']['directorsNconst'][i]
+                for i in range(len(movie_info[key][ll]['_source']['actorsNconst'])):
+                    person_id[movie_info[key][ll]['_source']['actorsName'][i]] = movie_info[key][ll]['_source']['actorsNconst'][i]
+                for i in range(len(movie_info[key][ll]['_source']['writersNconst'])):
+                    person_id[movie_info[key][ll]['_source']['writersName'][i]] = movie_info[key][ll]['_source']['writersNconst'][i]
+        form.location.data = ''
+    return render_template('index.html', form=form, location=location, hits=hits, movie_info=movie_info, person_id=person_id)
