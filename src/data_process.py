@@ -51,9 +51,9 @@ if __name__ == '__main__':
         w = csv.writer(f)
         for key in output_dict:
             for k in range(3, 6):
-                output_dict[key][k] = ','.join(output_dict[key][k])
+                output_dict[key][k] = '\t'.join(output_dict[key][k])
             for k in range(7, 10):
-                output_dict[key][k] = ','.join(output_dict[key][k])
+                output_dict[key][k] = '\t'.join(output_dict[key][k])
             w.writerow(output_dict[key])
 
     print('all done.')
