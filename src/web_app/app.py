@@ -80,7 +80,7 @@ def recent_events():
     res.sort(key=lambda x:x['_source']['Date']) 
     movie_info = {}
     person_id = {}
-
+    oscar_info = {}
     for hit in res:
         movie_name = hit['_source']['Movie name']
         query_body_movie = {
@@ -106,7 +106,24 @@ def recent_events():
                 person_id[movie_info[key][ll]['_source']['actorsName'][i]] = movie_info[key][ll]['_source']['actorsNconst'][i]
             for i in range(len(movie_info[key][ll]['_source']['writersNconst'])):
                 person_id[movie_info[key][ll]['_source']['writersName'][i]] = movie_info[key][ll]['_source']['writersNconst'][i]
-    return render_template('recent.html', form=form, hits = res, movie_info = movie_info, person_id=person_id)
+            
+            oscar_body = {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"match_phrase": {"movie_name": key}},
+                            {"match": {"year": str(movie_info[key][ll]['_source']['startYear'])}}
+                        ]
+                    }
+                }   
+            }
+            print(key)
+            print(str(movie_info[key][ll]['_source']['startYear']))
+            res_oscar = es.search(index="oscar", body=oscar_body, size=1)['hits']['hits']
+            print(res_oscar)
+            if res_oscar:
+                oscar_info[key] = str(movie_info[key][ll]['_source']['startYear'])
+    return render_template('recent.html', form=form, hits = res, movie_info = movie_info, person_id=person_id, oscar_info = oscar_info)
 
 @app.route('/recent/<month>', methods=['GET', 'POST'])
 def recent_month_events(month):
@@ -125,6 +142,7 @@ def recent_month_events(month):
             }
         },
     }
+    oscar_info = {}
 
     res = es.search(index="events_test", body=query_body, size=50)['hits']['hits']
     res.sort(key=lambda x:x['_source']['Date'])
@@ -156,7 +174,23 @@ def recent_month_events(month):
                 person_id[movie_info[key][ll]['_source']['actorsName'][i]] = movie_info[key][ll]['_source']['actorsNconst'][i]
             for i in range(len(movie_info[key][ll]['_source']['writersNconst'])):
                 person_id[movie_info[key][ll]['_source']['writersName'][i]] = movie_info[key][ll]['_source']['writersNconst'][i]
-    return render_template('recent.html', form=form, hits = res, month=month, movie_info=movie_info, person_id=person_id)
+            oscar_body = {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"match_phrase": {"movie_name": key}},
+                            {"match": {"year": str(movie_info[key][ll]['_source']['startYear'])}}
+                        ]
+                    }
+                }   
+            }
+            print(key)
+            print(str(movie_info[key][ll]['_source']['startYear']))
+            res_oscar = es.search(index="oscar", body=oscar_body, size=1)['hits']['hits']
+            print(res_oscar)
+            if res_oscar:
+                oscar_info[key] = str(movie_info[key][ll]['_source']['startYear'])    
+    return render_template('recent.html', form=form, hits = res, month=month, movie_info=movie_info, person_id=person_id, oscar_info = oscar_info)
 
 @app.route('/person/<nconst>', methods=['GET', 'POST'])
 def person_page(nconst):
@@ -208,6 +242,8 @@ def find_location():
     hits = None
     movie_info = {}
     person_id ={}
+    oscar_info = {}
+
     form = NameForm()
     if form.validate_on_submit():
         location = form.location.data
@@ -248,5 +284,21 @@ def find_location():
                     person_id[movie_info[key][ll]['_source']['actorsName'][i]] = movie_info[key][ll]['_source']['actorsNconst'][i]
                 for i in range(len(movie_info[key][ll]['_source']['writersNconst'])):
                     person_id[movie_info[key][ll]['_source']['writersName'][i]] = movie_info[key][ll]['_source']['writersNconst'][i]
+            oscar_body = {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"match_phrase": {"movie_name": key}},
+                            {"match": {"year": str(movie_info[key][ll]['_source']['startYear'])}}
+                        ]
+                    }
+                }   
+            }
+            print(key)
+            print(str(movie_info[key][ll]['_source']['startYear']))
+            res_oscar = es.search(index="oscar", body=oscar_body, size=1)['hits']['hits']
+            print(res_oscar)
+            if res_oscar:
+                oscar_info[key] = str(movie_info[key][ll]['_source']['startYear'])
         form.location.data = ''
-    return render_template('index.html', form=form, location=location, hits=hits, movie_info=movie_info, person_id=person_id)
+    return render_template('index.html', form=form, location=location, hits=hits, movie_info=movie_info, person_id=person_id, oscar_info = oscar_info)

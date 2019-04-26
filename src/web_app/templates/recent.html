@@ -80,6 +80,10 @@
                                             <p><b>Rating</b>: {% if mm['_source']['rating'] %}
                                                 {{ mm['_source']['rating'] }}
                                                 {% else %}N/A{% endif %}</p>
+                                            <p>{% if oscar_info[mm['_source']['primaryTitle']] %}
+                                                <b>Got Oscar Nominations in {{ oscar_info[mm['_source']['primaryTitle']] }}</b>
+                                                {% endif %}
+                                            </p>
                                         </div>
                                         {% endfor%}
                                         {% endif %}

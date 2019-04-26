@@ -21,7 +21,7 @@
         {% for movie in movie_list %}
             <!-- Button trigger modal -->
             <div>
-            <button type="button" class="btn btn-primary btn-md" data-toggle="modal" data-target=#{{ movie['_source']['primaryTitle'] }}>
+            <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target=#{{ movie['_source']['primaryTitle'] }}>
                     {{ movie['_source']['primaryTitle'] }}
             </button>
             </div>   
@@ -65,6 +65,7 @@
                 </div>
                 </div>
             </div>
+            <p></p>
         {% endfor %}
     {% endif %}
 </ul>
